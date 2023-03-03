@@ -3,9 +3,11 @@ package com.example.kiddrawingapp
 import android.app.Dialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.ContentInfoCompat
 import androidx.core.view.get
@@ -28,7 +30,6 @@ class MainActivity : AppCompatActivity() {
             it.setImageDrawable(
                 ContextCompat.getDrawable(this, R.drawable.pallet_pressed)
             )
-
         }
 
         val ib_brush : ImageButton = findViewById(R.id.ib_brush)
@@ -60,4 +61,29 @@ class MainActivity : AppCompatActivity() {
 
         brushDialog.show()
     }
+
+    fun paintClicked(view: View) {
+//        Toast.makeText(this,"paint clicked", Toast.LENGTH_SHORT).show()
+        if (view != mImageButtonCurrentPaint) {
+            val imageButton = view as ImageButton
+            val colorTag = imageButton.tag.toString()
+            drawingView?.setColor(colorTag)
+
+            //set draw current pressed color
+            imageButton.setImageDrawable(
+                ContextCompat.getDrawable(this, R.drawable.pallet_pressed)
+            )
+
+            //before set new current view in property mImageButtonCurrentPaint will clear set draw normal
+            mImageButtonCurrentPaint?.let {
+                it.setImageDrawable(
+                    ContextCompat.getDrawable(this, R.drawable.pallet_normal)
+                )
+            }
+
+            //then set new current view in property mImageButtonCurrentPaint
+            mImageButtonCurrentPaint = view
+        }
+    }
+
 }
