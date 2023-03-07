@@ -4,10 +4,13 @@ package com.example.kiddrawingapp
 import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -23,15 +26,15 @@ class MainActivity : AppCompatActivity() {
 
     private var drawingView : DrawingView? = null
     private var mImageButtonCurrentPaint: ImageButton? = null
-    private var cameraResultLauncher : ActivityResultLauncher<String> =
+    private var openGalleryLauncher : ActivityResultLauncher<Intent> =
         registerForActivityResult(
-            ActivityResultContracts.RequestPermission()) {
-                isGranted ->
-                if (isGranted) {
-                    Toast.makeText(this,"Permission granted for camera.",Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(this,"Permission denied for camera.",Toast.LENGTH_LONG).show()
-                }
+            ActivityResultContracts.StartActivityForResult()) {
+                result ->
+
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val imageBackground:ImageView = findViewById(R.id.iv_background)
+                imageBackground.setImageURI(result.data?.data)
+            }
         }
     private var cameraAndLocationAndStorageResultLauncher : ActivityResultLauncher<Array<String>> =
         registerForActivityResult(
@@ -48,6 +51,8 @@ class MainActivity : AppCompatActivity() {
                             Toast.makeText(this,"Permission granted for camera.",Toast.LENGTH_LONG).show()
                         } else if (permissionName == Manifest.permission.READ_EXTERNAL_STORAGE) {
                             Toast.makeText(this,"Permission granted for READ_EXTERNAL_STORAGE.",Toast.LENGTH_LONG).show()
+                            val pickIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                            openGalleryLauncher.launch(pickIntent)
                         }
                     } else {
                         if (permissionName == Manifest.permission.ACCESS_FINE_LOCATION) {
