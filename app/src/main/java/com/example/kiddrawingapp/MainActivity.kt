@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this,"Permission denied for camera.",Toast.LENGTH_LONG).show()
                 }
         }
-    private var cameraAndLocationResultLauncher : ActivityResultLauncher<Array<String>> =
+    private var cameraAndLocationAndStorageResultLauncher : ActivityResultLauncher<Array<String>> =
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()) {
                 permissions ->
@@ -46,12 +46,16 @@ class MainActivity : AppCompatActivity() {
                             Toast.makeText(this,"Permission granted for location.",Toast.LENGTH_LONG).show()
                         } else if (permissionName == Manifest.permission.CAMERA) {
                             Toast.makeText(this,"Permission granted for camera.",Toast.LENGTH_LONG).show()
+                        } else if (permissionName == Manifest.permission.READ_EXTERNAL_STORAGE) {
+                            Toast.makeText(this,"Permission granted for READ_EXTERNAL_STORAGE.",Toast.LENGTH_LONG).show()
                         }
                     } else {
                         if (permissionName == Manifest.permission.ACCESS_FINE_LOCATION) {
                             Toast.makeText(this,"Permission denied for location.",Toast.LENGTH_LONG).show()
                         } else if (permissionName == Manifest.permission.CAMERA) {
                             Toast.makeText(this,"Permission denied for camera.",Toast.LENGTH_LONG).show()
+                        } else if (permissionName == Manifest.permission.READ_EXTERNAL_STORAGE) {
+                            Toast.makeText(this,"Permission denied for READ_EXTERNAL_STORAGE.",Toast.LENGTH_LONG).show()
                         }
                     }
                 }
@@ -79,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 
         val ib_gallery : ImageButton = findViewById(R.id.ib_gallery)
         ib_gallery.setOnClickListener {
-            checkOpenPermissionCamera()
+            checkOpenAllPermissions()
         }
     }
 
@@ -96,14 +100,19 @@ class MainActivity : AppCompatActivity() {
         builder.create().show()
     }
 
-    private fun checkOpenPermissionCamera() {
-        if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.M &&
-            shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-            showRationaleDialog("Permission requires camera access","Camera cannot used because Camera access is denied")
-        } else {
+    private fun checkOpenAllPermissions() {
+//        if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.M &&
+//            shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+//            showRationaleDialog("Permission requires camera access","Camera cannot used because Camera access is denied")
+//        } else {
 //            cameraResultLauncher.launch(Manifest.permission.CAMERA)
-            cameraAndLocationResultLauncher.launch(
-                arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION)
+//        }
+
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            showRationaleDialog("Kids Drawing App","Kids Drawing App need access your External Storage, Camera and Location")
+        } else {
+            cameraAndLocationAndStorageResultLauncher.launch(
+                arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE)
             )
         }
 
