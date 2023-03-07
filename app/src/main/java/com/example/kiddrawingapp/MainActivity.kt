@@ -90,6 +90,11 @@ class MainActivity : AppCompatActivity() {
         ib_gallery.setOnClickListener {
             checkOpenAllPermissions()
         }
+
+        val ib_undo : ImageButton = findViewById(R.id.ib_undo)
+        ib_undo.setOnClickListener {
+            drawingView?.onClickUndo()
+        }
     }
 
     private fun showRationaleDialog(
