@@ -74,6 +74,8 @@ class MainActivity : AppCompatActivity() {
                 }
         }
 
+    var customProgressDialog : Dialog? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -107,10 +109,13 @@ class MainActivity : AppCompatActivity() {
         val ib_save : ImageButton = findViewById(R.id.ib_save)
         ib_save.setOnClickListener {
             if (isReadStorageAllowed()) {
+                showProgressDialog()
                 lifecycleScope.launch {
                     val flDrawingView : FrameLayout = findViewById(R.id.fl_drawing_view_container)
                     val myBitmap : Bitmap = getBitmapFromView(flDrawingView)
                     saveBitmapFile(myBitmap)
+                    hideProgressDialog()
+
                 }
             }
         }
@@ -202,6 +207,19 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
+    }
+
+    private fun showProgressDialog() {
+        customProgressDialog = Dialog(this@MainActivity)
+        customProgressDialog?.setContentView(R.layout.dialog_custom_progress)
+        customProgressDialog?.show()
+    }
+
+    private fun hideProgressDialog() {
+        if (customProgressDialog != null) {
+            customProgressDialog?.dismiss()
+            customProgressDialog = null
+        }
     }
 
     private fun showBrushSizeChooserDialog() {
