@@ -5,6 +5,7 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -12,17 +13,21 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.get
-
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 
 
 class MainActivity : AppCompatActivity() {
@@ -101,7 +106,13 @@ class MainActivity : AppCompatActivity() {
 
         val ib_save : ImageButton = findViewById(R.id.ib_save)
         ib_save.setOnClickListener {
-
+            if (isReadStorageAllowed()) {
+                lifecycleScope.launch {
+                    val flDrawingView : FrameLayout = findViewById(R.id.fl_drawing_view_container)
+                    val myBitmap : Bitmap = getBitmapFromView(flDrawingView)
+                    saveBitmapFile(myBitmap)
+                }
+            }
         }
     }
 
@@ -121,6 +132,39 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private suspend fun saveBitmapFile(mBitmap: Bitmap) : String {
+        var result: String = ""
+        withContext(Dispatchers.IO) {
+            if (mBitmap != null) {
+                try {
+                    val bytes = ByteArrayOutputStream()
+                    mBitmap.compress(Bitmap.CompressFormat.PNG,90,bytes)
+
+                    val f =  File(externalCacheDir?.absoluteFile.toString()
+                            +  File.separator + "KidDrawingApp_" + System.currentTimeMillis() /1000 + ".png")
+
+                    val fo = FileOutputStream(f)
+                    fo.write(bytes.toByteArray())
+                    fo.close()
+
+                    result = f.absolutePath
+
+                    runOnUiThread {
+                        if (result.isNotEmpty()) {
+                            Toast.makeText(this@MainActivity, "File saved successfully :$result",Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this@MainActivity, "Someyhing went wrong while  saving the file.",Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    result = ""
+                    e.printStackTrace()
+                }
+            }
+        }
+        return result
+    }
+
     private fun showRationaleDialog(
         title: String,
         message: String
@@ -132,6 +176,11 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
         builder.create().show()
+    }
+
+    private fun isReadStorageAllowed() : Boolean {
+        val  result = ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE)
+        return  result == PackageManager.PERMISSION_GRANTED
     }
 
     private fun checkOpenAllPermissions() {
@@ -146,7 +195,10 @@ class MainActivity : AppCompatActivity() {
             showRationaleDialog("Kids Drawing App","Kids Drawing App need access your External Storage, Camera and Location")
         } else {
             cameraAndLocationAndStorageResultLauncher.launch(
-                arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_EXTERNAL_STORAGE)
+                arrayOf(Manifest.permission.CAMERA,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
             )
         }
 
